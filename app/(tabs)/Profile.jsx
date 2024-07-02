@@ -6,8 +6,8 @@ import { router } from 'expo-router';
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: 'Narayan Pradhan',
+    email: 'narayan.pradhan1117@gmail.com',
     phone: '123-456-7890',
   });
 
@@ -17,7 +17,6 @@ const Profile = () => {
 
   const handleSave = () => {
     setIsEditing(false);
-    // Add logic to save profile data
   };
 
   const handleChange = (key, value) => {
