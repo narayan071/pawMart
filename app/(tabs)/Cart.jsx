@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useCart } from '../context/CartContext';
 import CustomButton from '../../components/CustomButton';
 import { useRouter } from 'expo-router';
@@ -27,11 +27,14 @@ const Cart = () => {
     dispatch({ type: 'REMOVE_ITEM', payload: { id } });
   };
 
-  // Render item for FlatList
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
-      <Text style={styles.itemName}>{item.name}</Text>
+      <View style={styles.itemDetails}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemPrice}>item price: ${item.price.toFixed(2)}</Text>
+      </View>
       <View style={styles.quantityContainer}>
+        <Text style={styles.quantityLabel}>Quantity:</Text>
         <TouchableOpacity onPress={() => handleDecreaseQuantity(item.id)} style={styles.quantityButton}>
           <Text style={styles.quantityButtonText}>-</Text>
         </TouchableOpacity>
@@ -40,12 +43,19 @@ const Cart = () => {
           <Text style={styles.quantityButtonText}>+</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.itemPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
-      <TouchableOpacity onPress={() => handleRemoveFromCart(item.id)} style={styles.removeButton}>
-        <Text style={styles.removeButtonText}>Remove</Text>
-      </TouchableOpacity>
+      <Text style={styles.itemSubtotal}>Subtotal: ${(item.price * item.quantity).toFixed(2)}</Text>
+      <CustomButton
+        title="Remove"
+        color="secondary"
+        size="medium"
+        onPress={() => handleRemoveFromCart(item.id)}
+      />
     </View>
   );
+
+  const handleCheckout = () => {
+    Alert.alert('Checkout', 'Proceed to checkout');
+  };
 
   return (
     <View style={styles.container}>
@@ -60,22 +70,24 @@ const Cart = () => {
         />
       )}
       <View style={styles.footer}>
-        <Text style={styles.subtotal}>Subtotal: ${getSubtotal().toFixed(2)}</Text>
-        {getSubtotal() === 0 ? (
-          <CustomButton 
-            title="Add Items"
-            color="primary"
-            size="medium"
-            onPress={()=>router.push('/Home')}
-          />
-        ) : (
-          <CustomButton 
-            title="Checkout" 
-            color="primary" 
-            size="medium" 
-            onPress={() => alert('Proceed to Checkout')} 
-          />
-        )}
+        <Text style={styles.totalText}>Total: ${getSubtotal().toFixed(2)}</Text>
+        <View >
+          {getSubtotal() === 0 ? (
+            <CustomButton 
+              title="Add Items"
+              color="primary"
+              size="medium"
+              onPress={() => router.push('/Home')}
+            />
+          ) : (
+            <CustomButton 
+              title="Checkout" 
+              color="primary" 
+              size="medium" 
+              onPress={handleCheckout} 
+            />
+          )}
+        </View>
       </View>
     </View>
   );
@@ -84,61 +96,77 @@ const Cart = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    backgroundColor: '#f8f8f8',
+    padding: 15,
+    backgroundColor: '#f0f0f0',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 15,
+    textAlign: 'center',
   },
   itemContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    marginBottom: 5,
     backgroundColor: '#fff',
-    borderRadius: 5,
+    padding: 15,
+    borderRadius: 8,
+    marginHorizontal: 10,
+    marginBottom: 10,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    alignItems: 'center'
+  },
+  itemDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
   itemName: {
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  itemQuantity: {
-    fontSize: 14,
-    color: '#555',
-    marginHorizontal: 10,
+    marginRight: 100,
   },
   itemPrice: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 16,
     color: 'green',
-    marginVertical: 5,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 5,
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  quantityLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 10,
   },
   quantityButton: {
-    padding: 5,
-    backgroundColor: '#ddd',
+    width: 30,
+    height: 30,
     borderRadius: 5,
+    backgroundColor: '#ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   quantityButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
   },
-  removeButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: 'red',
-    borderRadius: 5,
+  itemQuantity: {
+    fontSize: 16,
+    marginHorizontal: 10,
   },
-  removeButtonText: {
-    color: '#fff',
+  itemSubtotal: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'green',
+    marginVertical: 5,
     textAlign: 'center',
   },
+  
   emptyText: {
     fontSize: 18,
     color: '#555',
@@ -147,14 +175,22 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 20,
-    padding: 10,
+    padding: 15,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
     alignItems: 'center',
   },
-  subtotal: {
+  totalText: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 15,
   },
+  
 });
 
 export default Cart;

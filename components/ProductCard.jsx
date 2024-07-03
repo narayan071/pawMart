@@ -1,9 +1,11 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
-import CustomButton from "./CustomButton";
-import { useCart } from "../app/context/CartContext";
+import React from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import CustomButton from './CustomButton';
+import { useCart } from '../app/context/CartContext';
+import { AirbnbRating } from 'react-native-ratings';
 
-const ProductCard = ({ product, isGrid }) => {
+const ProductCard = ({ product, isGrid, onPress }) => {
   const { dispatch } = useCart(); 
 
   const handleAddToCart = () => {
@@ -11,7 +13,10 @@ const ProductCard = ({ product, isGrid }) => {
   };
 
   return (
-    <View style={[styles.card, isGrid ? styles.gridCard : styles.listCard]}>
+    <TouchableOpacity 
+      onPress={onPress}  // Added onPress prop to handle clicks
+      style={[styles.card, isGrid ? styles.gridCard : styles.listCard]}
+    >
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: product.image }}
@@ -32,15 +37,25 @@ const ProductCard = ({ product, isGrid }) => {
         <View style={styles.descriptionContainer}>
           <Text style={styles.productDescription}>{product.description}</Text>
           <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
+          <View style={styles.ratingContainer}>
+            <AirbnbRating
+              count={5}
+              defaultRating={product.rating}
+              size={15}
+              isDisabled
+              showRating={false}
+            />
+          </View>
           <CustomButton
             title="Add to Cart"
             color="secondary"
             size="small"
             onPress={handleAddToCart} 
+            style={styles.addToCartBtn}  // Added the style here
           />
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -55,6 +70,7 @@ const styles = StyleSheet.create({
   },
   descriptionContainer: {
     flexDirection: "column",
+    alignItems: 'center',  
   },
   gridCard: {
     width: "45%",
@@ -94,12 +110,13 @@ const styles = StyleSheet.create({
     color: "green",
     marginTop: 5,
   },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
   addToCartBtn: {
-    backgroundColor: "gold",
-    padding: 5,
-    margin: 5,
-    borderRadius: 5,
-    marginTop:10
+    marginTop: 10,  // Ensures space between rating and button
   },
   imageContainer: {
     position: "relative",
