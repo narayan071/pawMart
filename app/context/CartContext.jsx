@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useReducer } from 'react';
+
 const initialState = {
   items: [],
 };
+
 const ADD_ITEM = 'ADD_ITEM';
 const REMOVE_ITEM = 'REMOVE_ITEM';
+const UPDATE_ITEM = 'UPDATE_ITEM';
 
 const cartReducer = (state, action) => {
   switch (action.type) {
@@ -23,10 +26,16 @@ const cartReducer = (state, action) => {
     case REMOVE_ITEM:
       return {
         items: state.items
-          .map(item => 
-            item.id === action.payload.id ? { ...item, quantity: item.quantity - 1 } : item
-          )
-          .filter(item => item.quantity > 0),
+          .filter(item => item.id !== action.payload.id)
+      };
+
+    case UPDATE_ITEM:
+      return {
+        items: state.items.map(item =>
+          item.id === action.payload.id
+            ? { ...item, quantity: action.payload.quantity }
+            : item
+        ),
       };
 
     default:

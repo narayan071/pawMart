@@ -1,19 +1,46 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { useCart } from '../context/CartContext'; 
-import CustomButton from '../../components/CustomButton';  
-const Cart = () => {
-  const { state, dispatch } = useCart();  
+import { useCart } from '../context/CartContext';
+import CustomButton from '../../components/CustomButton';
+import { useRouter } from 'expo-router';
 
-  const handleRemoveFromCart = (id) => {
-    dispatch({ type: 'REMOVE_ITEM', payload: { id } });  
+const Cart = () => {
+  const { state, dispatch } = useCart();
+  const router = useRouter();
+
+  const getSubtotal = () => {
+    return state.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   };
 
+  const handleIncreaseQuantity = (id) => {
+    dispatch({ type: 'UPDATE_ITEM', payload: { id, quantity: state.items.find(item => item.id === id).quantity + 1 } });
+  };
+
+  const handleDecreaseQuantity = (id) => {
+    const item = state.items.find(item => item.id === id);
+    if (item.quantity > 1) {
+      dispatch({ type: 'UPDATE_ITEM', payload: { id, quantity: item.quantity - 1 } });
+    }
+  };
+
+  const handleRemoveFromCart = (id) => {
+    dispatch({ type: 'REMOVE_ITEM', payload: { id } });
+  };
+
+  // Render item for FlatList
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <Text style={styles.itemName}>{item.name}</Text>
-      <Text style={styles.itemQuantity}>Quantity: {item.quantity}</Text>
-      <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+      <View style={styles.quantityContainer}>
+        <TouchableOpacity onPress={() => handleDecreaseQuantity(item.id)} style={styles.quantityButton}>
+          <Text style={styles.quantityButtonText}>-</Text>
+        </TouchableOpacity>
+        <Text style={styles.itemQuantity}>{item.quantity}</Text>
+        <TouchableOpacity onPress={() => handleIncreaseQuantity(item.id)} style={styles.quantityButton}>
+          <Text style={styles.quantityButtonText}>+</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.itemPrice}>${(item.price * item.quantity).toFixed(2)}</Text>
       <TouchableOpacity onPress={() => handleRemoveFromCart(item.id)} style={styles.removeButton}>
         <Text style={styles.removeButtonText}>Remove</Text>
       </TouchableOpacity>
@@ -33,12 +60,22 @@ const Cart = () => {
         />
       )}
       <View style={styles.footer}>
-        <CustomButton 
-          title="Checkout" 
-          color="primary" 
-          size="medium" 
-          onPress={() => alert('Proceed to Checkout')} 
-        />
+        <Text style={styles.subtotal}>Subtotal: ${getSubtotal().toFixed(2)}</Text>
+        {getSubtotal() === 0 ? (
+          <CustomButton 
+            title="Add Items"
+            color="primary"
+            size="medium"
+            onPress={()=>router.push('/Home')}
+          />
+        ) : (
+          <CustomButton 
+            title="Checkout" 
+            color="primary" 
+            size="medium" 
+            onPress={() => alert('Proceed to Checkout')} 
+          />
+        )}
       </View>
     </View>
   );
@@ -60,6 +97,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     marginBottom: 5,
+    backgroundColor: '#fff',
+    borderRadius: 5,
   },
   itemName: {
     fontSize: 16,
@@ -68,11 +107,27 @@ const styles = StyleSheet.create({
   itemQuantity: {
     fontSize: 14,
     color: '#555',
+    marginHorizontal: 10,
   },
   itemPrice: {
     fontSize: 14,
     fontWeight: 'bold',
     color: 'green',
+    marginVertical: 5,
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  quantityButton: {
+    padding: 5,
+    backgroundColor: '#ddd',
+    borderRadius: 5,
+  },
+  quantityButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   removeButton: {
     marginTop: 10,
@@ -94,6 +149,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     alignItems: 'center',
+  },
+  subtotal: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
 
